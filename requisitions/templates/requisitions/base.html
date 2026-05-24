@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Requisition System{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+
+        <!-- Logo + Brand -->
+        <a href="{% if user.is_staff %}{% url 'report_list' %}{% else %}{% url 'dashboard' %}{% endif %}"
+           class="flex items-center gap-3 group">
+          <!-- Icon -->
+          <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm group-hover:bg-blue-700 transition-colors">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2"
+                 viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <!-- Text -->
+          <div class="leading-tight">
+            <p class="text-sm font-bold text-gray-800 tracking-tight">RequisitionFlow</p>
+            <p class="text-xs text-gray-400 hidden sm:block">Departmental Order System</p>
+          </div>
+        </a>
+
+        {% if user.is_authenticated %}
+        <!-- Nav links (staff only) -->
+        <nav class="hidden md:flex items-center gap-1">
+          {% if user.is_staff %}
+            <a href="{% url 'report_list' %}"
+               class="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              Reports
+            </a>
+            <a href="{% url 'department_list' %}"
+               class="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+              Departments
+            </a>
+            <a href="{% url 'item_list' %}"
+               class="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+              Items
+            </a>
+          {% else %}
+            <a href="{% url 'dashboard' %}"
+               class="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+              Dashboard
+            </a>
+            <a href="{% url 'history' %}"
+               class="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              History
+            </a>
+          {% endif %}
+        </nav>
+
+        <!-- Right: user info + logout -->
+        <div class="flex items-center gap-3">
+          <!-- User badge -->
+          <div class="hidden sm:flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+            <div class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
+              <span class="text-blue-700 text-xs font-bold">{{ user.username|slice:":1"|upper }}</span>
+            </div>
+            <div class="leading-tight">
+              <p class="text-xs font-semibold text-gray-800">{{ user.username }}</p>
+              <p class="text-xs text-gray-400">
+                {% if user.is_staff %}Administrator{% elif user.department %}{{ user.department.department_name }}{% else %}No dept.{% endif %}
+              </p>
+            </div>
+          </div>
+          <!-- Logout -->
+          <a href="{% url 'logout' %}"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors border border-transparent hover:border-red-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+            <span class="hidden sm:inline">Logout</span>
+          </a>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash messages -->
+  {% if messages %}
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-4 space-y-2">
+      {% for msg in messages %}
+        <div class="flex items-start gap-3 px-4 py-3 rounded-lg border text-sm
+          {% if msg.tags == 'success' %}bg-green-50 text-green-800 border-green-200
+          {% elif msg.tags == 'error' %}bg-red-50 text-red-800 border-red-200
+          {% elif msg.tags == 'warning' %}bg-yellow-50 text-yellow-800 border-yellow-200
+          {% else %}bg-blue-50 text-blue-800 border-blue-200{% endif %}">
+          <span class="mt-0.5">
+            {% if msg.tags == 'success' %}&#10003;
+            {% elif msg.tags == 'error' %}&#9888;
+            {% elif msg.tags == 'warning' %}&#9888;
+            {% else %}&#9432;{% endif %}
+          </span>
+          {{ msg }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 grow">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="bg-white border-t border-gray-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between text-xs text-gray-400">
+      <span>&copy; 2026 RequisitionFlow &mdash; A.K.Singh</span>
+      <span>Departmental Order Management System</span>
+    </div>
+  </footer>
+
+</body>
+</html>

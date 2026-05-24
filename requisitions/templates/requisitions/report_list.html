@@ -1,0 +1,149 @@
+{% extends "requisitions/base.html" %}
+{% block title %}Requisition Report{% endblock %}
+{% block content %}
+
+<div class="flex justify-between items-start mb-4 flex-wrap gap-3">
+  <div>
+    <h1 class="text-2xl font-bold">Requisition Report</h1>
+    <p class="text-sm text-gray-500">View and export submissions from all departments</p>
+  </div>
+  <div class="flex gap-2 flex-wrap">
+    <a href="{% url 'report_print' %}?date_from={{ date_from }}&date_to={{ date_to }}&dept_id={{ dept_id }}"
+       target="_blank"
+       class="flex items-center gap-1 bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded font-medium">
+      &#128438; Print View
+    </a>
+    <a href="{% url 'report_export_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}&dept_id={{ dept_id }}"
+       class="flex items-center gap-1 bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded font-medium">
+      &#8659; Export CSV
+    </a>
+  </div>
+</div>
+
+<!-- Filter Form -->
+<form method="get" class="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">Date From</label>
+    <input type="date" name="date_from" value="{{ date_from }}"
+           class="border border-gray-300 rounded px-3 py-1.5 text-sm" />
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">Date To</label>
+    <input type="date" name="date_to" value="{{ date_to }}"
+           class="border border-gray-300 rounded px-3 py-1.5 text-sm" />
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">Department</label>
+    <select name="dept_id" class="border border-gray-300 rounded px-3 py-1.5 text-sm">
+      <option value="">All Departments</option>
+      {% for d in departments %}
+        <option value="{{ d.id }}" {% if dept_id == d.id|stringformat:"s" %}selected{% endif %}>
+          {{ d.department_name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit"
+          class="bg-blue-700 hover:bg-blue-800 text-white px-5 py-1.5 rounded text-sm font-medium">
+    Filter
+  </button>
+  <a href="{% url 'report_list' %}" class="text-sm text-gray-500 hover:underline py-1.5">Clear</a>
+</form>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+  <div class="bg-white border rounded p-3">
+    <div class="text-xs text-gray-500">Submissions</div>
+    <div class="text-xl font-semibold text-blue-700">{{ total_submissions }}</div>
+  </div>
+  <div class="bg-white border rounded p-3">
+    <div class="text-xs text-gray-500">Line Items</div>
+    <div class="text-xl font-semibold text-green-700">{{ total_line_items }}</div>
+  </div>
+  <div class="bg-white border rounded p-3">
+    <div class="text-xs text-gray-500">Date From</div>
+    <div class="text-sm font-semibold">{{ date_from|default:"—" }}</div>
+  </div>
+  <div class="bg-white border rounded p-3">
+    <div class="text-xs text-gray-500">Date To</div>
+    <div class="text-sm font-semibold">{{ date_to|default:"—" }}</div>
+  </div>
+</div>
+
+<!-- Submissions Table -->
+<div class="bg-white border rounded overflow-hidden">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-100 text-left">
+      <tr>
+        <th class="px-4 py-2 w-28">Date</th>
+        <th class="px-4 py-2">Department</th>
+        <th class="px-4 py-2">Items Requested</th>
+        <th class="px-4 py-2 hidden sm:table-cell">Submitted At</th>
+        <th class="px-4 py-2 hidden sm:table-cell">Updated At</th>
+        <th class="px-4 py-2 text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sub in page_obj %}
+        <tr class="border-t align-top hover:bg-gray-50">
+          <td class="px-4 py-3 font-medium whitespace-nowrap">{{ sub.submission_date }}</td>
+          <td class="px-4 py-3">
+            {% if sub.user.department %}
+              <span class="font-medium">{{ sub.user.department.department_name }}</span>
+              <span class="block text-xs text-gray-400">{{ sub.user.username }}</span>
+            {% else %}
+              <span class="text-gray-400">{{ sub.user.username }}</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3">
+            {% for li in sub.line_items.all %}
+              <div class="text-xs py-0.5">
+                <span class="font-medium">{{ li.item.item_name }}</span>
+                <span class="text-gray-500"> — {{ li.quantity }} {{ li.unit }}</span>
+              </div>
+            {% empty %}
+              <span class="text-gray-400 text-xs">No items</span>
+            {% endfor %}
+          </td>
+          <td class="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell whitespace-nowrap">
+            {{ sub.submitted_at|date:"d M Y H:i" }}
+          </td>
+          <td class="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell whitespace-nowrap">
+            {{ sub.updated_at|date:"d M Y H:i" }}
+          </td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <a href="{% url 'report_print' %}?date_from={{ sub.submission_date }}&date_to={{ sub.submission_date }}&dept_id={{ sub.user.department.id|default:'' }}"
+               target="_blank"
+               class="text-gray-600 hover:text-gray-900 text-xs mr-2">Print</a>
+            <a href="{% url 'edit_form' sub.id %}"
+               class="text-blue-600 hover:underline text-xs">Edit</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="px-4 py-8 text-center text-gray-400">
+            No submissions found for the selected filters.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+  <div class="mt-4 flex gap-2 text-sm">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&date_from={{ date_from }}&date_to={{ date_to }}&dept_id={{ dept_id }}"
+         class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
+    {% endif %}
+    <span class="px-3 py-1 text-gray-600">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&date_from={{ date_from }}&date_to={{ date_to }}&dept_id={{ dept_id }}"
+         class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}

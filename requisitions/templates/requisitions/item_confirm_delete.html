@@ -1,0 +1,20 @@
+{% extends "requisitions/base.html" %}
+{% block title %}Delete Item{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white border rounded-lg p-6 mt-8">
+  <h1 class="text-xl font-bold mb-3 text-red-700">Delete Item</h1>
+  <p class="mb-4 text-gray-700">
+    Are you sure you want to delete <strong>{{ item.item_name }}</strong>?
+  </p>
+  <p class="text-sm text-gray-500 mb-6">
+    If this item has historical usage it will be retired (hidden from forms) instead of deleted.
+  </p>
+  <form method="post" class="flex gap-3">
+    {% csrf_token %}
+    <a href="{% url 'item_list' %}" class="px-4 py-2 border rounded hover:bg-gray-50">Cancel</a>
+    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+      Yes, Delete
+    </button>
+  </form>
+</div>
+{% endblock %}

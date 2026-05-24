@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Requisition Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { font-size: 11pt; }
+      table { page-break-inside: auto; }
+      tr { page-break-inside: avoid; page-break-after: auto; }
+      .dept-block { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body class="bg-white p-6 text-gray-800">
+
+  <!-- Print / Close buttons -->
+  <div class="no-print flex gap-3 mb-6">
+    <button onclick="window.print()"
+            class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded font-medium">
+      &#128438; Print / Save as PDF
+    </button>
+    <button onclick="window.close()"
+            class="border px-5 py-2 rounded hover:bg-gray-50">
+      Close
+    </button>
+  </div>
+
+  <!-- Report Header -->
+  <div class="border-b pb-4 mb-6">
+    <h1 class="text-2xl font-bold">Departmental Requisition Report</h1>
+    <div class="mt-1 text-sm text-gray-600 flex flex-wrap gap-6">
+      {% if date_from or date_to %}
+        <span>
+          Period:
+          <strong>{{ date_from|default:"—" }}</strong>
+          to
+          <strong>{{ date_to|default:"—" }}</strong>
+        </span>
+      {% else %}
+        <span>Period: <strong>All dates</strong></span>
+      {% endif %}
+      {% if dept_label %}
+        <span>Department: <strong>{{ dept_label }}</strong></span>
+      {% else %}
+        <span>Department: <strong>All Departments</strong></span>
+      {% endif %}
+      <span>Printed: <strong>{{ printed_at|date:"d M Y H:i" }}</strong></span>
+    </div>
+  </div>
+
+  {% if submissions %}
+    {% regroup submissions by submission_date as by_date %}
+
+    {% for date_group in by_date %}
+      <!-- Date heading -->
+      <div class="mb-6">
+        <h2 class="text-base font-bold bg-gray-100 px-3 py-1.5 rounded mb-3">
+          Date: {{ date_group.grouper }}
+        </h2>
+
+        {% for sub in date_group.list %}
+          <div class="dept-block mb-5 ml-2">
+            <!-- Department sub-heading -->
+            <div class="flex justify-between items-baseline mb-1">
+              <h3 class="font-semibold text-sm">
+                {% if sub.user.department %}
+                  {{ sub.user.department.department_name }}
+                {% else %}
+                  {{ sub.user.username }}
+                {% endif %}
+              </h3>
+              <span class="text-xs text-gray-400">
+                Submitted: {{ sub.submitted_at|date:"H:i" }}
+                &nbsp;|&nbsp;
+                Updated: {{ sub.updated_at|date:"H:i" }}
+              </span>
+            </div>
+
+            <!-- Line items table -->
+            <table class="min-w-full text-sm border border-gray-200">
+              <thead class="bg-blue-700 text-white">
+                <tr>
+                  <th class="text-left px-3 py-1.5 w-1/2">Item</th>
+                  <th class="text-left px-3 py-1.5 w-1/4">Category</th>
+                  <th class="text-left px-3 py-1.5">Qty</th>
+                  <th class="text-left px-3 py-1.5">Unit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for li in sub.line_items.all %}
+                  <tr class="border-t border-gray-200 {% cycle '' 'bg-gray-50' %}">
+                    <td class="px-3 py-1.5">{{ li.item.item_name }}</td>
+                    <td class="px-3 py-1.5 text-gray-500 text-xs">{{ li.item.get_category_display }}</td>
+                    <td class="px-3 py-1.5 font-medium">{{ li.quantity }}</td>
+                    <td class="px-3 py-1.5 text-gray-600">{{ li.unit }}</td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="4" class="px-3 py-2 text-gray-400 text-xs italic">No items recorded.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+    <!-- Grand Summary -->
+    <div class="border-t pt-4 mt-6 no-print">
+      <p class="text-sm text-gray-500">
+        Total submissions: <strong>{{ submissions|length }}</strong>
+      </p>
+    </div>
+
+  {% else %}
+    <div class="text-center py-16 text-gray-400">
+      <p class="text-lg">No requisitions found for the selected filters.</p>
+    </div>
+  {% endif %}
+
+  {# Auto-trigger print: uncomment the line below to open print dialog automatically #}
+  {# <script>window.onload = function(){ window.print(); };</script> #}
+
+</body>
+</html>

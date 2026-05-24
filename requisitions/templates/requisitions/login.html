@@ -1,0 +1,33 @@
+{% extends "requisitions/base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-12 bg-white p-8 shadow-md rounded-lg">
+  <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Department Login</h1>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div>
+      <label class="block text-sm font-medium mb-1 text-gray-700">Username</label>
+      {{ form.username }}
+      {% for e in form.username.errors %}
+        <p class="text-red-600 text-xs mt-1">{{ e }}</p>
+      {% endfor %}
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1 text-gray-700">Password</label>
+      {{ form.password }}
+      {% for e in form.password.errors %}
+        <p class="text-red-600 text-xs mt-1">{{ e }}</p>
+      {% endfor %}
+    </div>
+    {% if form.non_field_errors %}
+      <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-2 rounded text-sm">
+        {% for e in form.non_field_errors %}{{ e }}{% endfor %}
+      </div>
+    {% endif %}
+    <button type="submit"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
+      Sign In
+    </button>
+  </form>
+</div>
+{% endblock %}

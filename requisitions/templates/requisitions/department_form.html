@@ -1,0 +1,45 @@
+{% extends "requisitions/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto bg-white border rounded-lg p-6">
+  <h1 class="text-xl font-bold mb-4">{{ title }}</h1>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div>
+      <label class="block text-sm font-medium mb-1">Department name</label>
+      {{ form.department_name }}
+      {% for e in form.department_name.errors %}
+        <p class="text-red-600 text-xs mt-1">{{ e }}</p>
+      {% endfor %}
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Username</label>
+      {{ form.username }}
+      {% for e in form.username.errors %}
+        <p class="text-red-600 text-xs mt-1">{{ e }}</p>
+      {% endfor %}
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Password</label>
+      {{ form.password }}
+      <p class="text-xs text-gray-500 mt-0.5">Leave blank to keep existing password.</p>
+      {% for e in form.password.errors %}
+        <p class="text-red-600 text-xs mt-1">{{ e }}</p>
+      {% endfor %}
+    </div>
+    <label class="flex items-center gap-2">
+      {{ form.is_active }}
+      <span class="text-sm">Active</span>
+    </label>
+    {% if form.non_field_errors %}
+      <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-2 rounded text-sm">
+        {% for e in form.non_field_errors %}{{ e }}{% endfor %}
+      </div>
+    {% endif %}
+    <div class="flex justify-end gap-2 pt-2">
+      <a href="{% url 'department_list' %}" class="px-4 py-2 border rounded hover:bg-gray-50">Cancel</a>
+      <button class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Save</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "requisitions/base.html" %}
+{% block title %}Submission History{% endblock %}
+{% block content %}
+
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">Submission History</h1>
+    {% if dept_name %}
+      <p class="text-sm text-gray-500">{{ dept_name }} — all past requisitions</p>
+    {% endif %}
+  </div>
+  <a href="{% url 'dashboard' %}" class="text-sm text-blue-600 hover:underline">&larr; Dashboard</a>
+</div>
+
+<div class="bg-white shadow rounded overflow-hidden">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="text-left px-4 py-2">Date</th>
+        <th class="text-left px-4 py-2">Items Requested</th>
+        <th class="text-left px-4 py-2 hidden sm:table-cell">Submitted At</th>
+        <th class="text-left px-4 py-2 hidden sm:table-cell">Last Updated</th>
+        <th class="text-right px-4 py-2">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sub in page_obj %}
+        <tr class="border-t align-top hover:bg-gray-50">
+          <td class="px-4 py-3 font-medium whitespace-nowrap">{{ sub.submission_date }}</td>
+          <td class="px-4 py-3">
+            {% for li in sub.line_items.all %}
+              <div class="text-xs py-0.5">
+                <span class="font-medium">{{ li.item.item_name }}</span>
+                <span class="text-gray-500"> &mdash; {{ li.quantity }} {{ li.unit }}</span>
+              </div>
+            {% empty %}
+              <span class="text-gray-400 text-xs italic">No items recorded</span>
+            {% endfor %}
+          </td>
+          <td class="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell whitespace-nowrap">
+            {{ sub.submitted_at|date:"d M Y H:i" }}
+          </td>
+          <td class="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell whitespace-nowrap">
+            {{ sub.updated_at|date:"d M Y H:i" }}
+          </td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <a href="{% url 'form_print' sub.id %}"
+               target="_blank"
+               class="text-gray-600 hover:text-gray-900 text-xs mr-3">&#128438; Print</a>
+            <a href="{% url 'edit_form' sub.id %}"
+               class="text-blue-600 hover:underline text-xs">Edit</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+            No submissions yet. <a href="{% url 'create_form' %}" class="text-blue-600 hover:underline">Create your first one.</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+  <div class="mt-4 flex gap-2 text-sm">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
+    {% endif %}
+    <span class="px-3 py-1 text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "requisitions/base.html" %}
+{% block title %}Bulk Import Items{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto bg-white border rounded-lg p-6">
+  <h1 class="text-xl font-bold mb-2">Bulk Import Items</h1>
+  <p class="text-sm text-gray-600 mb-4">
+    Upload a CSV with columns: <code>item_name, category, default_unit</code>.
+    Duplicates (by name) are skipped.
+  </p>
+  <form method="post" enctype="multipart/form-data" class="space-y-4">
+    {% csrf_token %}
+    <input type="file" name="csv_file" accept=".csv" required
+           class="block w-full text-sm border rounded p-2" />
+    <div class="flex justify-end gap-2">
+      <a href="{% url 'item_list' %}" class="px-4 py-2 border rounded hover:bg-gray-50">Cancel</a>
+      <button class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">Import</button>
+    </div>
+  </form>
+  <div class="mt-6">
+    <p class="text-xs text-gray-500 mb-1">Example CSV:</p>
+    <pre class="bg-gray-50 border rounded p-3 text-xs font-mono">item_name,category,default_unit
+A4 Paper,stationery,pcs
+Cello Tape,stationery,rolls
+Rice,pantry,kg
+Hand Sanitizer,hygiene,litres</pre>
+  </div>
+</div>
+{% endblock %}

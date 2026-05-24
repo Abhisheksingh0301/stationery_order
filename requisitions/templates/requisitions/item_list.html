@@ -1,0 +1,111 @@
+{% extends "requisitions/base.html" %}
+{% block title %}Item Master{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+  <div>
+    <h1 class="text-2xl font-bold">Item Master</h1>
+    <p class="text-sm text-gray-500">Fixed list of items shown on every requisition form</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'item_bulk_import' %}" class="border bg-white px-4 py-2 rounded hover:bg-gray-50">Bulk Import</a>
+    <a href="{% url 'item_create' %}" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded font-medium">+ Add Item</a>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-4 gap-3 mb-4">
+  <div class="bg-white border rounded p-3">
+    <div class="text-xs text-gray-500">Total</div>
+    <div class="text-xl font-semibold">{{ stats.total }}</div>
+  </div>
+  <div class="bg-white border rounded p-3">
+    <div class="text-xs text-gray-500">Active</div>
+    <div class="text-xl font-semibold text-green-700">{{ stats.active }}</div>
+  </div>
+  <div class="bg-white border rounded p-3">
+    <div class="text-xs text-gray-500">Retired</div>
+    <div class="text-xl font-semibold text-gray-500">{{ stats.retired }}</div>
+  </div>
+  <div class="bg-white border rounded p-3">
+    <div class="text-xs text-gray-500">Categories</div>
+    <div class="text-xl font-semibold text-blue-700">{{ stats.categories }}</div>
+  </div>
+</div>
+
+<!-- Filter -->
+<form method="get" class="bg-white border rounded p-3 mb-3 flex gap-2 flex-wrap">
+  <input type="text" name="q" value="{{ q }}" placeholder="Search item name..."
+         class="flex-1 min-w-0 border rounded px-3 py-1.5 text-sm" />
+  <select name="category" class="border rounded px-3 py-1.5 text-sm">
+    <option value="all">All categories</option>
+    {% for value, label in category_choices %}
+      <option value="{{ value }}" {% if category == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="status" class="border rounded px-3 py-1.5 text-sm">
+    <option value="all"     {% if status == "all" %}selected{% endif %}>All status</option>
+    <option value="active"  {% if status == "active" %}selected{% endif %}>Active</option>
+    <option value="retired" {% if status == "retired" %}selected{% endif %}>Retired</option>
+  </select>
+  <button class="bg-blue-700 text-white px-4 rounded text-sm">Filter</button>
+</form>
+
+<!-- Table -->
+<div class="bg-white border rounded overflow-hidden">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-100 text-left">
+      <tr>
+        <th class="px-4 py-2">ID</th>
+        <th class="px-4 py-2">Item</th>
+        <th class="px-4 py-2">Category</th>
+        <th class="px-4 py-2">Default Unit</th>
+        <th class="px-4 py-2">Status</th>
+        <th class="px-4 py-2 text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in page_obj %}
+        <tr class="border-t hover:bg-gray-50">
+          <td class="px-4 py-2 font-mono text-gray-500">{{ item.id|stringformat:"03d" }}</td>
+          <td class="px-4 py-2 font-medium">{{ item.item_name }}</td>
+          <td class="px-4 py-2">
+            <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
+              {{ item.get_category_display }}
+            </span>
+          </td>
+          <td class="px-4 py-2 font-mono text-xs">{{ item.default_unit }}</td>
+          <td class="px-4 py-2">
+            {% if item.is_active %}
+              <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs">active</span>
+            {% else %}
+              <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">retired</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-2 text-right">
+            <a href="{% url 'item_edit' item.id %}" class="text-blue-700 hover:underline mr-3">Edit</a>
+            <a href="{% url 'item_delete' item.id %}" class="text-red-700 hover:underline">Delete</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-gray-500 py-6">No items found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+  <div class="mt-4 flex gap-2 text-sm">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&category={{ category }}&status={{ status }}"
+         class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
+    {% endif %}
+    <span class="px-3 py-1">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&category={{ category }}&status={{ status }}"
+         class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

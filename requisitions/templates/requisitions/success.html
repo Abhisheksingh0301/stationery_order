@@ -1,0 +1,39 @@
+{% extends "requisitions/base.html" %}
+{% block title %}Success{% endblock %}
+{% block content %}
+<div class="bg-white shadow rounded p-8 max-w-2xl mx-auto text-center mt-8">
+  <div class="text-5xl text-green-500 mb-4">&#10003;</div>
+  <h1 class="text-2xl font-bold mb-2">Requisition Recorded</h1>
+  <p class="text-gray-600 mb-6">
+    Submitted on {{ submission.submission_date }} at {{ submission.updated_at|time:"H:i" }}.
+  </p>
+
+  <table class="min-w-full text-sm border mb-6">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="text-left px-3 py-2">Item</th>
+        <th class="text-left px-3 py-2">Qty</th>
+        <th class="text-left px-3 py-2">Unit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for li in submission.line_items.all %}
+        <tr class="border-t">
+          <td class="px-3 py-2">{{ li.item.item_name }}</td>
+          <td class="px-3 py-2">{{ li.quantity }}</td>
+          <td class="px-3 py-2">{{ li.unit }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3" class="px-3 py-3 text-center text-gray-500">No items recorded.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="flex justify-center gap-3">
+    <a href="{% url 'dashboard' %}"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Back to Dashboard</a>
+    <a href="{% url 'edit_form' submission.id %}"
+       class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">Edit</a>
+  </div>
+</div>
+{% endblock %}

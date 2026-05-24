@@ -1,0 +1,67 @@
+{% extends "requisitions/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">Dashboard</h1>
+    <p class="text-sm text-gray-500">Today: {{ today }}</p>
+  </div>
+  {% if today_submission %}
+    <a href="{% url 'edit_form' today_submission.id %}"
+       class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-medium">
+      Edit Today's Requisition
+    </a>
+  {% else %}
+    <a href="{% url 'create_form' %}"
+       class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium">
+      + New Requisition
+    </a>
+  {% endif %}
+</div>
+
+<div class="flex justify-between items-center mb-2">
+  <h2 class="text-lg font-semibold">Submission History</h2>
+  <a href="{% url 'history' %}" class="text-sm text-blue-600 hover:underline">View full history &rarr;</a>
+</div>
+<div class="bg-white shadow rounded overflow-hidden">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="text-left px-4 py-2">Date</th>
+        <th class="text-left px-4 py-2">Submitted At</th>
+        <th class="text-left px-4 py-2">Last Updated</th>
+        <th class="text-left px-4 py-2">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in page_obj %}
+        <tr class="border-t hover:bg-gray-50">
+          <td class="px-4 py-2">{{ s.submission_date }}</td>
+          <td class="px-4 py-2">{{ s.submitted_at|date:"d M Y H:i" }}</td>
+          <td class="px-4 py-2">{{ s.updated_at|date:"d M Y H:i" }}</td>
+          <td class="px-4 py-2 space-x-3">
+            <a href="{% url 'form_print' s.id %}" target="_blank" class="text-gray-500 hover:text-gray-800">Print</a>
+            <a href="{% url 'edit_form' s.id %}" class="text-blue-600 hover:underline">Edit</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="4" class="px-4 py-6 text-center text-gray-500">No submissions yet.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+  <div class="mt-4 flex gap-2 text-sm">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
+    {% endif %}
+    <span class="px-3 py-1">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}
