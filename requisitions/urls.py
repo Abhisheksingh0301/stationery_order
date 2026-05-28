@@ -19,9 +19,10 @@ urlpatterns = [
     path("departments/<int:dept_id>/delete/",   views.department_delete, name="department_delete"),
 
     # Reports
-    path("reports/",                            views.report_list,       name="report_list"),
-    path("reports/print/",                      views.report_print,      name="report_print"),
-    path("reports/export/csv/",                 views.report_export_csv, name="report_export_csv"),
+    path("reports/",                                        views.report_list,       name="report_list"),
+    path("reports/print/",                                  views.report_print,      name="report_print"),
+    path("reports/export/csv/",                             views.report_export_csv, name="report_export_csv"),
+    path("reports/<int:submission_id>/mark-delivered/",     views.mark_delivered,    name="mark_delivered"),
 
     # Item Master
     path("items/",                              views.item_list,         name="item_list"),

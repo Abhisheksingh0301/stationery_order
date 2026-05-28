@@ -141,9 +141,15 @@ def create_form(request):
 # ---------- Edit ----------
 
 @login_required
-@department_required
 def edit_form(request, submission_id):
-    submission = get_object_or_404(FormSubmission, id=submission_id, user=request.user)
+    if request.user.is_staff:
+        submission = get_object_or_404(FormSubmission, id=submission_id)
+    else:
+        if not hasattr(request.user, "department"):
+            messages.error(request, "Your account has no department assigned. Contact an administrator.")
+            return redirect("login")
+        submission = get_object_or_404(FormSubmission, id=submission_id, user=request.user)
+
     items = Item.objects.filter(is_active=True)
     existing = {li.item_id: li for li in submission.line_items.all()}
 
@@ -166,6 +172,8 @@ def edit_form(request, submission_id):
                     )
                 submission.save()  # bump updated_at
             messages.success(request, "Submission updated.")
+            if request.user.is_staff:
+                return redirect("report_list")
             return redirect("success", submission_id=submission.id)
         except ValueError as e:
             messages.error(request, str(e))
@@ -190,16 +198,24 @@ def success_view(request, submission_id):
 # ---------- Form Print ----------
 
 @login_required
-@department_required
 def form_print(request, submission_id):
-    submission = get_object_or_404(
-        FormSubmission.objects.prefetch_related("line_items__item"),
-        id=submission_id,
-        user=request.user,
-    )
+    if request.user.is_staff:
+        submission = get_object_or_404(
+            FormSubmission.objects.prefetch_related("line_items__item"),
+            id=submission_id,
+        )
+    else:
+        if not hasattr(request.user, "department"):
+            messages.error(request, "Your account has no department assigned. Contact an administrator.")
+            return redirect("login")
+        submission = get_object_or_404(
+            FormSubmission.objects.prefetch_related("line_items__item"),
+            id=submission_id,
+            user=request.user,
+        )
     return render(request, "requisitions/form_print.html", {
         "submission": submission,
-        "dept_name": getattr(request.user, "department", None),
+        "dept_name": getattr(submission.user, "department", None),
         "printed_at": timezone.now(),
     })
 
@@ -494,6 +510,22 @@ def report_print(request):
         "dept_label":  dept_label,
         "printed_at":  timezone.now(),
     })
+
+
+@login_required
+@user_passes_test(is_staff)
+def mark_delivered(request, submission_id):
+    if request.method == "POST":
+        submission = get_object_or_404(FormSubmission, id=submission_id)
+        if submission.status == FormSubmission.STATUS_DELIVERED:
+            submission.status = FormSubmission.STATUS_PENDING
+        else:
+            submission.status = FormSubmission.STATUS_DELIVERED
+        submission.save(update_fields=["status"])
+    next_url = request.POST.get("next", "")
+    if next_url:
+        return redirect(next_url)
+    return redirect("report_list")
 
 
 @login_required
