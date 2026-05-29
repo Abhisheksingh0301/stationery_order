@@ -11,7 +11,7 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 
 from .models import Item, FormSubmission, FormSubmissionItem, Department
-from .forms import StyledAuthForm, DepartmentMasterForm, ItemMasterForm
+from .forms import StyledAuthForm, DepartmentMasterForm, ItemMasterForm, SuperuserSignupForm
 from .decorators import department_required
 
 
@@ -46,6 +46,29 @@ def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out.")
     return redirect("login")
+
+
+def superuser_signup(request):
+    no_superuser_exists = not User.objects.filter(is_superuser=True).exists()
+    requesting_superuser = request.user.is_authenticated and request.user.is_superuser
+
+    if not no_superuser_exists and not requesting_superuser:
+        messages.error(request, "Access denied.")
+        return redirect("login")
+
+    if request.method == "POST":
+        form = SuperuserSignupForm(request.POST)
+        if form.is_valid():
+            user = User.objects.create_superuser(
+                username=form.cleaned_data["username"],
+                password=form.cleaned_data["password"],
+                email="",
+            )
+            messages.success(request, f"Superuser '{user.username}' created successfully.")
+            return redirect("login")
+    else:
+        form = SuperuserSignupForm()
+    return render(request, "requisitions/signup.html", {"form": form})
 
 
 # ---------- Dashboard ----------

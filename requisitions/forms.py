@@ -78,6 +78,33 @@ class DepartmentMasterForm(forms.Form):
         return cleaned
 
 
+class SuperuserSignupForm(forms.Form):
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": _input_cls, "placeholder": "Superuser username"}),
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"class": _input_cls, "placeholder": "Password"}),
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"class": _input_cls, "placeholder": "Confirm password"}),
+    )
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
+
+    def clean(self):
+        cleaned = super().clean()
+        pw = cleaned.get("password")
+        cpw = cleaned.get("confirm_password")
+        if pw and cpw and pw != cpw:
+            self.add_error("confirm_password", "Passwords do not match.")
+        return cleaned
+
+
 class ItemMasterForm(forms.ModelForm):
     class Meta:
         model = Item
